@@ -11,7 +11,7 @@ def checkValidInput():
 	global message
 	global from_state
 	global from_zipcode
-
+	
 	while (validInput == False):
 		if (len(message.split()) > 200):
 			print("Sorry, your message is too long. Please shorten it to under 200 words.")
@@ -22,7 +22,7 @@ def checkValidInput():
 			from_state = input("What state are you from (abbreviated)? ")
 			continue
 		if (len(from_zipcode) != 5):
-			print("Sorry, please enter a valid zipcode with at least 5 characters.")
+			print("Sorry, please enter a valid zipcode with 5 numbers.")
 			from_zipcode = input("What is your zipcode? ")
 			continue
 		validInput = True
@@ -35,26 +35,27 @@ def getSenator():
 		url = "https://www.googleapis.com/civicinfo/v2/representatives?address=" + from_city + "&includeOffices=true&roles=legislatorUpperBody&key=AIzaSyAU55DtK8jxhiBZKCG95Lag7La72sbQBYw"
 		response = urlopen(url).read().decode('utf8')
 		jsonData = json.loads(response)
+
+		#Parsing JSON
+		senator = jsonData['officials'][0]
+
+		to_name = senator['name']
+		to_address1 = senator['address'][0]['line1']
+
+		if 'line2' in senator['address'][0]:
+			to_address2 = senator['address'][0]['line2']
+		else:
+			to_address2 = ""
+
+		to_state = senator['address'][0]['state']
+		to_city = senator['address'][0]['city'].title()
+		to_zipcode = senator['address'][0]['zip']
+
+		return (to_name, to_address1, to_address2, to_state, to_city, to_zipcode)
 	except:
 		print("Sorry, the address information you have given us is invalid. Please try again.")
 
-	#Parsing JSON
-	senator = jsonData['officials'][0]
 
-	to_name = senator['name']
-	to_address1 = senator['address'][0]['line1']
-
-	if 'line2' in senator['address'][0]:
-		to_address2 = senator['address'][0]['line2']
-	else:
-		to_address2 = ""
-
-	to_state = senator['address'][0]['state']
-	to_city = senator['address'][0]['city'].title()
-	to_zipcode = senator['address'][0]['zip']
-
-
-	return (to_name, to_address1, to_address2, to_state, to_city, to_zipcode)
 
 # Sends letter to selected senator via Lob
 def sendLetter(senatorInfo):
@@ -101,17 +102,9 @@ from_state = input("What state are you from (abbreviated)? ")
 from_zipcode = input("What is your zipcode? ")
 message = input("And what would you like to send to your senator? ")
 
-# from_name = "Sampath"
-# from_address1 = "3211 Lady Fern Loop"
-# from_address2 = ""
-# from_city = "Olympia"
-# from_state = "WA"
-# from_zipcode = "98502"
-# message = "ANYTHING"
-
+# Program
 checkValidInput()
 senatorInfo = getSenator()
-# print(senatorInfo)
 sendLetter(senatorInfo)
 
 
